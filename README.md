@@ -12,15 +12,15 @@ To create a wrapper class, just create a class which inerits from the `Coulis` c
 
 ``` ruby
 class Curl < Coulis
-	adef :user, "-u"
-	adef :url, "--url"
-	adef :request, "-X"
-	adef :data, "-d"
-	adef :header, "-H"
-	adef :agent, "-A"
-	adef :form, "-F"
-	adef :proxy, "-x"
-	adef :head, "-I"
+  adef :user, "-u"
+  adef :url, "--url"
+  adef :request, "-X"
+  adef :data, "-d"
+  adef :header, "-H"
+  adef :agent, "-A"
+  adef :form, "-F"
+  adef :proxy, "-x"
+  adef :head, "-I"
 end
 ```
 
@@ -28,13 +28,13 @@ To use the created class:
 
 ``` ruby
 Curl.options {
-	user "user:passwd"
-	request "POST"
-	data "url=http://site.com/video.avi"
-	data "title=MyTitle"
-	url "https://heywatch.com/download.json"
+  user "user:passwd"
+  request "POST"
+  data "url=http://site.com/video.avi"
+  data "title=MyTitle"
+  url "https://heywatch.com/download.json"
 }.exec do |out|
-	puts out
+  puts out
 end
 ```
 
@@ -42,8 +42,8 @@ It's that easy. Note that all other parameters (not defined in the class) are st
 
 ``` ruby
 Curl.options {
-	e "http://site.com/referer" # -e => referer
-	url "http://google.com"
+  e "http://site.com/referer" # -e => referer
+  url "http://google.com"
 }.exec {...}
 ```
 
@@ -51,25 +51,25 @@ You can define profile. For example, you want to set the user agent, user creden
 
 ``` ruby
 class Curl < Coulis
-	adef :user, "-u"
-	adef :url, "--url"
-	adef :request, "-X"
-	adef :data, "-d"
-	adef :header, "-H"
-	adef :agent, "-A"
-	adef :form, "-F"
-	adef :proxy, "-x"
-	adef :head, "-I"
+  adef :user, "-u"
+  adef :url, "--url"
+  adef :request, "-X"
+  adef :data, "-d"
+  adef :header, "-H"
+  adef :agent, "-A"
+  adef :form, "-F"
+  adef :proxy, "-x"
+  adef :head, "-I"
 
-	adef :accept_json do
-		header "Accept: application/json"
-	end
+  adef :accept_json do
+    header "Accept: application/json"
+  end
 
-	adef :default do
-		user "user:passwd"
-		accept_json
-		agent "Coulis / 0.1.0"
-	end
+  adef :default do
+    user "user:passwd"
+    accept_json
+    agent "Coulis / 0.1.0"
+  end
 end
 ```
 
@@ -77,8 +77,8 @@ Now to use our profile `default`:
 
 ``` ruby
 Curl.options {
-	default
-	url "http://heywatch.com/account"
+  default
+  url "http://heywatch.com/account"
 }.exec {...}
 ```
 
