@@ -81,3 +81,7 @@ Curl.options {
 	url "http://heywatch.com/account"
 }.exec {...}
 ```
+
+Released under the [MIT license](http://www.opensource.org/licenses/mit-license.php).
+
+Author: Bruno Celeste [@sadikzzz](http://twitter.com/sadikzzz)
