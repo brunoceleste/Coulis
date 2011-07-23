@@ -27,26 +27,31 @@ To use the created class:
 
 ``` ruby
 Curl.options {
-  user "user:passwd"
+  user    "user:passwd"
   request "POST"
-  data "url=http://site.com/video.avi"
-  data "title=MyTitle"
-  url "https://heywatch.com/download.json"
+  data    "url=http://site.com/video.avi"
+  data    "title=MyTitle"
+  url     "https://heywatch.com/download.json"
 }.exec do |out|
   puts out
 end
 ```
 
-It's that easy. Note that all other short and long parameters (not defined in the class) are still available via their name. Example with the parameter `-e` and `--url`:
+## Arguments ##
+
+You can define an argument with the method `adef`. Note that all other short and long parameters (not defined in the class) are still available via their name. Example with the parameters `-e` and `--url`:
 
 ``` ruby
 Curl.options {
-  e "http://site.com/referer" # -e => referer
-  url "http://google.com"
+  agent "Coulis / 0.1.2"
+  e     "http://site.com/referer" # -e => referer
+  url   "http://google.com"
 }.exec {...}
 ```
 
-You can define profile. For example, you want to set the user agent, user credentials and the header accept/json for each request. Let's define it in our class Curl:
+## Profile ##
+
+Let's say you want to set the user agent, user credentials and the header accept/json for each request. Let's define it in our class Curl:
 
 ``` ruby
 class Curl < Coulis
@@ -78,6 +83,26 @@ Curl.options {
   default
   url "http://heywatch.com/account"
 }.exec {...}
+```
+
+## Parsing Output ##
+
+Define the method `parse_output` in your class to automatically parse the output, here is an example with `nslookup`:
+
+``` ruby
+class NSLookup < Coulis
+  def parse_output(output)
+    output.split("\n").
+      map{|x| x.match(/Address: ([0-9\.]+)/)[1] rescue nil}.
+      compact
+  end
+end
+
+NSLookup.options {
+  @args = ["google.com"]
+}.exec do |ips|
+  p ips # => ["209.85.148.106", "209.85.148.103", "209.85.148.147", "209.85.148.99", "209.85.148.105", "209.85.148.104"]
+end
 ```
 
 Released under the [MIT license](http://www.opensource.org/licenses/mit-license.php).
