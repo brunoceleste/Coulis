@@ -53,10 +53,10 @@ You can add other arguments or delete them before calling `exec`.
 
 ``` ruby
 curl = Curl.options { url "http://google.com" } # => "curl --url 'http://google.com'"
-curl.options { agent "Coulis / 0.1.2" } # => "curl --url 'http://google.com' -A 'Coulis / 0.1.2'"
-curl.proxy "proxyip:port" # => "curl --url 'http://google.com' -A 'Coulis / 0.1.2' -x 'proxyip:port'"
+curl.options { agent "Coulis / 0.1.2" }         # => "curl --url 'http://google.com' -A 'Coulis / 0.1.2'"
+curl.proxy "proxyip:port"                       # => "curl --url 'http://google.com' -A 'Coulis / 0.1.2' -x 'proxyip:port'"
 
-curl.remove :proxy # => "curl --url 'http://google.com' -A 'Coulis / 0.1.2'"
+curl.remove :proxy                              # => "curl --url 'http://google.com' -A 'Coulis / 0.1.2'"
 ```
 
 ## Profile ##
@@ -130,7 +130,7 @@ Will raise a `Timeout::Error`.
 
 ## Execution ##
 
-`exec` can be used with or without a block. If used without block, it will return the output directly, otherwise an instance of `Process::Status`.
+`exec` can be used with or without a block. If used without a block, it will return the output directly, otherwise an instance of `Process::Status`.
 
 ``` ruby
 process = Curl.options {
