@@ -12,15 +12,14 @@ To create a wrapper class, just create a class which inerits from the `Coulis` c
 
 ``` ruby
 class Curl < Coulis
-  adef :user, "-u"
-  adef :url, "--url"
+  adef :user,    "-u"
   adef :request, "-X"
-  adef :data, "-d"
-  adef :header, "-H"
-  adef :agent, "-A"
-  adef :form, "-F"
-  adef :proxy, "-x"
-  adef :head, "-I"
+  adef :data,    "-d"
+  adef :header,  "-H"
+  adef :agent,   "-A"
+  adef :form,    "-F"
+  adef :proxy,   "-x"
+  adef :head,    "-I"
 end
 ```
 
@@ -38,7 +37,7 @@ Curl.options {
 end
 ```
 
-It's that easy. Note that all other parameters (not defined in the class) are still available via their name. Example with the parameter `-e`:
+It's that easy. Note that all other short and long parameters (not defined in the class) are still available via their name. Example with the parameter `-e` and `--url`:
 
 ``` ruby
 Curl.options {
@@ -51,15 +50,14 @@ You can define profile. For example, you want to set the user agent, user creden
 
 ``` ruby
 class Curl < Coulis
-  adef :user, "-u"
-  adef :url, "--url"
+  adef :user,    "-u"
   adef :request, "-X"
-  adef :data, "-d"
-  adef :header, "-H"
-  adef :agent, "-A"
-  adef :form, "-F"
-  adef :proxy, "-x"
-  adef :head, "-I"
+  adef :data,    "-d"
+  adef :header,  "-H"
+  adef :agent,   "-A"
+  adef :form,    "-F"
+  adef :proxy,   "-x"
+  adef :head,    "-I"
 
   adef :accept_json do
     header "Accept: application/json"

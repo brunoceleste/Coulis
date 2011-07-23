@@ -33,12 +33,15 @@ class Coulis
       if definition.is_a?(Proc)
         definition.call
       else
+        arg_name = "#{"-" if m[0..0] != "-"}#{m}"
+        arg_name = "-" + arg_name if arg_name.size > 2
+
         if args.to_s.empty?
-          @args << [ definition || "#{"-" if m[0..0] != "-"}#{m}" ]
+          @args << [ definition || arg_name ]
         else
           q = ""
           q = "'" if args.to_s[0..0] != "'"
-          @args << [ definition || "#{"-" if m[0..0] != "-"}#{m}" , "#{q}#{args}#{q}" ]
+          @args << [ definition || arg_name , "#{q}#{args}#{q}" ]
         end
       end
     end

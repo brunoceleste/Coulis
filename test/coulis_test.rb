@@ -58,10 +58,16 @@ class SimpleCliTest < Test::Unit::TestCase
     assert_equal ls.args.size, 2
   end
 
-  def test_not_defined_argument
+  def test_not_defined_short_argument
     ls = Ls.options { s }
     assert_equal ls.args.size, 1
     assert_equal ls.args.to_s, "-s"
+  end
+  
+  def test_not_defined_long_argument
+    ls = Ls.options { color }
+    assert_equal ls.args.size, 1
+    assert_equal ls.args.to_s, "--color"
   end
 
   def test_command
