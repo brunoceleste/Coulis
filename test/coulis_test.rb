@@ -70,6 +70,12 @@ class SimpleCliTest < Test::Unit::TestCase
     assert_equal ls.args.to_s, "--color"
   end
 
+  def test_not_defined_long_argument_with_underscore
+    ls = Ls.options { color_test }
+    assert_equal ls.args.size, 1
+    assert_equal ls.args.to_s, "--color-test"
+  end
+
   def test_command
     assert_equal Ls.options { full; s }.command, "ls -a -h -s"
   end

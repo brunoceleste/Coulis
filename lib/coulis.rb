@@ -34,7 +34,7 @@ class Coulis
         definition.call
       else
         arg_name = "#{"-" if m[0..0] != "-"}#{m}"
-        arg_name = "-" + arg_name if arg_name.size > 2
+        arg_name = "-" + arg_name.gsub("_", "-") if arg_name.size > 2
 
         if args.to_s.empty?
           @args << [ definition || arg_name ]
