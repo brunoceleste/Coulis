@@ -49,6 +49,16 @@ Curl.options {
 }.exec {...}
 ```
 
+You can add other arguments or delete them before calling `exec`.
+
+``` ruby
+curl = Curl.options { url "http://google.com" } # => "curl --url 'http://google.com'"
+curl.options { agent "Coulis / 0.1.2" } # => "curl --url 'http://google.com' -A 'Coulis / 0.1.2'"
+curl.proxy "proxyip:port" # => "curl --url 'http://google.com' -A 'Coulis / 0.1.2' -x 'proxyip:port'"
+
+curl.remove :proxy # => "curl --url 'http://google.com' -A 'Coulis / 0.1.2'"
+```
+
 ## Profile ##
 
 Let's say you want to set the user agent, user credentials and the header accept/json for each request. Let's define it in our class Curl:
@@ -104,6 +114,40 @@ NSLookup.options {
   p ips # => ["209.85.148.106", "209.85.148.103", "209.85.148.147", "209.85.148.99", "209.85.148.105", "209.85.148.104"]
 end
 ```
+
+## Timeout ##
+
+Add a special argument `_timeout` if you don't want the process to run more than x seconds:
+
+``` ruby
+Curl.options {
+  url "http://site.com/superlongaction"
+  _timeout 2
+}.exec {...}
+```
+
+Will raise a `Timeout::Error`.
+
+## Execution ##
+
+`exec` can be used with or without a block. If used without block, it will return the output directly, otherwise an instance of `Process::Status`.
+
+``` ruby
+process = Curl.options {
+  url "http://google.com"
+}.exec {...}
+
+puts process.exitstatus # => 0
+```
+
+``` ruby
+page = Curl.options {
+  url "http://google.com"
+}.exec
+
+puts page # => HTML of the google page
+```
+
 
 Released under the [MIT license](http://www.opensource.org/licenses/mit-license.php).
 
