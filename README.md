@@ -148,6 +148,59 @@ page = Curl.options {
 puts page # => HTML of the google page
 ```
 
+## Success and Error Events ##
+
+You can use `on_success` and `on_error` to respectively execute code after a successful command exectution and after an error (when existstatus is != 0).
+It's important that exec comes at the very end of the chain.
+
+``` ruby
+Curl.options {
+  url "http://google.com"
+}.on_success {|status, out|
+  puts "Page downloaded"
+}.exec
+
+=> "Page downloaded"
+```
+
+``` ruby
+Curl.options {
+  url "http://baddomainnamezzz.com"
+}.on_success {|status, out|
+  puts "Page downloaded"
+}.on_error {|status, out|
+  puts "Error downloading the page"
+}.exec
+
+=> "Error downloading the page"
+```
+
+You can also do something after success and error but at the class level via `after_success` and `after_error` methods. Here is an example:
+
+``` ruby
+class Curl < Coulis
+  def after_success(proc, out)
+    puts "After Success"
+    # do something
+  end
+
+  def after_error(proc, out)
+    puts "After error"
+    # do something
+  end
+end
+
+Curl.options {
+  url "http://baddomainnamezzz.com"
+}.on_success {|status, out|
+  puts "Page downloaded"
+}.on_error {|status, out|
+  puts "Error downloading the page"
+}.exec
+
+=> "Error downloading the page
+After error"
+```
 
 Released under the [MIT license](http://www.opensource.org/licenses/mit-license.php).
 

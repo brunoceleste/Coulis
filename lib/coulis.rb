@@ -103,10 +103,11 @@ class Coulis
       end
     end
     if $?.exitstatus != 0
-      puts "ERROR: #{res}"
-      on_error(res)
+      @on_error_block.call($?, res) if @on_error_block.is_a?(Proc)
+      after_error($?, res)
     else
-      on_success(res)
+      @on_success_block.call($?, res) if @on_success_block.is_a?(Proc)
+      after_success($?, res)
     end
     return (block_given? ? $? : parse_output(res))
   end
@@ -115,13 +116,18 @@ class Coulis
     output
   end
 
-  def on_error(output)
-    output
+  def on_error(&block)
+    @on_error_block = block
+    self
   end
 
-  def on_success(output)
-    output
+  def on_success(&block)
+    @on_success_block = block
+    self
   end
+
+  def after_success(proc, res); end
+  def after_error(proc, res); end
 
   def method_missing(m, args=nil)
     self.class.args = @args

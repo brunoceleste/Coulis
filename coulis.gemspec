@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'coulis'
-  s.version     = '0.1.2'
+  s.version     = '0.2.0'
   s.summary     = "A simple CLI Wrapper"
   s.description = "Simple but powerful CLI Wrapper"
   s.authors     = ["Bruno Celeste"]

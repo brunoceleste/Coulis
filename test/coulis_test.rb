@@ -190,4 +190,28 @@ class SimpleCliTest < Test::Unit::TestCase
       assert true, ips.size > 1
     end
   end
+
+  def test_success_event
+    process = Ls.options {
+      all
+    }.on_success {|status, out| 
+      assert_instance_of Process::Status, status
+      assert_equal status.exitstatus, 0
+      assert_instance_of String, out
+    }.exec {|out| 
+      assert_instance_of String, out
+    }
+  end
+
+  def test_error_event
+    process = Ls.options {
+      @args = ["/not/a/path"]
+    }.on_error {|status, out|
+      assert_instance_of Process::Status, status
+      assert_equal status.exitstatus, 1
+      assert_instance_of String, out
+    }.exec {|out| 
+      assert_instance_of String, out
+    }
+  end
 end
