@@ -2,7 +2,7 @@ require "timeout"
 
 class Coulis
   class << self
-    attr_accessor :args, :_definitions, :_bin, :timeout
+    attr_accessor :args, :_definitions, :_bin, :timeout, :no_double_dash
 
     def exec(*args, &block)
       self.new.exec *args, &block
@@ -20,6 +20,10 @@ class Coulis
       @timeout = t
     end
 
+    def _no_double_dash
+      @no_double_dash = true
+    end
+
     def adef(name, option=nil, &block)
       (@_definitions||={})[name.to_sym] = (option || Proc.new { self.instance_eval(&block).flatten })
     end
@@ -34,7 +38,7 @@ class Coulis
         definition.call
       else
         arg_name = "#{"-" if m[0..0] != "-"}#{m}"
-        arg_name = "-" + arg_name.gsub("_", "-") if arg_name.size > 2
+        arg_name = "-" + arg_name.gsub("_", "-") if !@no_double_dash && arg_name.size > 2
 
         if args.to_s.empty?
           @args << [ definition || arg_name ]
@@ -88,20 +92,33 @@ class Coulis
 
   def fire_command(&block)
     puts command + " (timeout: #{self.class.timeout || -1}) + #{block_given?}" if $DEBUG
-    res = "" unless block_given?
+    res = ""
     IO.popen(command + "  3>&2 2>&1") do |pipe|
       pipe.each("\r") do |line|
+        res << line
         if block_given?
           yield parse_output(line)
-        else
-          res << line
         end
       end
+    end
+    if $?.exitstatus != 0
+      puts "ERROR: #{res}"
+      on_error(res)
+    else
+      on_success(res)
     end
     return (block_given? ? $? : parse_output(res))
   end
 
   def parse_output(output)
+    output
+  end
+
+  def on_error(output)
+    output
+  end
+
+  def on_success(output)
     output
   end
 
