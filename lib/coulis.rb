@@ -67,8 +67,9 @@ class Coulis
 
   def remove(*args)
     new_args = []
+    defs = self.class._definitions || {}
     args.each do |a|
-      @args.select {|b| b[0] == (self.class._definitions[a] || "-#{a}")}.each do |b|
+      @args.select {|b| b[0] == (defs[a] || "-#{a}")}.each do |b|
         @args.delete(b)
       end
     end
