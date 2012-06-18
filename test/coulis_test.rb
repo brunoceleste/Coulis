@@ -10,6 +10,10 @@ class Ls < Coulis
   end
 end
 
+class FFMpeg < Coulis
+  _no_double_dash
+end
+
 class Ping < Coulis
   bin `whereis ping`.strip
   adef :count, "-c"
@@ -74,6 +78,18 @@ class SimpleCliTest < Test::Unit::TestCase
     ls = Ls.options { color_test }
     assert_equal ls.args.size, 1
     assert_equal ls.args.to_s, "--color-test"
+  end
+
+  def test_no_double_dash_option
+    ffmpeg = FFMpeg.options { vcodec "libx264" }
+    assert_equal ffmpeg.command, "ffmpeg -vcodec 'libx264'"
+  end
+
+  def test_remove_args_if_not_defined
+    ffmpeg = FFMpeg.options { vcodec "libx264" }
+    assert_equal ffmpeg.args.size, 1
+    ffmpeg.remove :vcodec
+    assert_equal ffmpeg.args.size, 0
   end
 
   def test_command
