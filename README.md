@@ -159,8 +159,6 @@ Curl.options {
 }.on_success {|status, out|
   puts "Page downloaded"
 }.exec
-
-=> "Page downloaded"
 ```
 
 ``` ruby
@@ -171,8 +169,6 @@ Curl.options {
 }.on_error {|status, out|
   puts "Error downloading the page"
 }.exec
-
-=> "Error downloading the page"
 ```
 
 You can also do something after success and error but at the class level via `after_success` and `after_error` methods. Here is an example:
@@ -197,8 +193,9 @@ Curl.options {
 }.on_error {|status, out|
   puts "Error downloading the page"
 }.exec
-
-=> "Error downloading the page
+```
+```
+"Error downloading the page
 After error"
 ```
 
