@@ -4,10 +4,7 @@ require "coulis"
 class Ls < Coulis
   adef :all, "-a"
   adef :human, "-h"
-
-  adef :full do
-    all; human
-  end
+  adef :full, "-a -h"
 end
 
 class FFMpeg < Coulis
@@ -15,7 +12,7 @@ class FFMpeg < Coulis
 end
 
 class Ping < Coulis
-  bin `whereis ping`.strip
+  _bin `whereis ping`.strip
   adef :count, "-c"
 end
 
@@ -29,8 +26,12 @@ end
 
 class SimpleCliTest < Test::Unit::TestCase
   def teardown
-    Ls.new.reset
-    Ping.new.reset
+    #Ls.new.reset
+    #Ping.new.reset
+  end
+
+  def test_shit
+    #p Ls.options { full }
   end
 
   def test_default_bin
@@ -39,7 +40,7 @@ class SimpleCliTest < Test::Unit::TestCase
 
   def test_defined_bin
     assert_equal Ping.new.command, `whereis ping`.strip
-    assert_equal Ping.new.command, Ping._bin
+    assert_equal Ping.new.command, Ping.bin
   end
 
   def test_adef
@@ -47,9 +48,8 @@ class SimpleCliTest < Test::Unit::TestCase
     assert_equal Ls._definitions[:human], "-h"
   end
 
-  def test_adef_with_block
-    assert_instance_of Proc, Ls._definitions[:full]
-    assert_equal Ls._definitions[:full].call, ["-a", "-h"]
+  def test_adef_with_multiple_args
+    assert_equal Ls._definitions[:full], "-a -h"
   end
 
   def test_argument_added
@@ -57,63 +57,58 @@ class SimpleCliTest < Test::Unit::TestCase
     assert true, ls.args[0] == "-a"
   end
 
-  def test_all_arguments_from_adef_added
-    ls = Ls.options { full }
-    assert_equal ls.args.size, 2
-  end
-
   def test_not_defined_short_argument
-    ls = Ls.options { s }
-    assert_equal ls.args.size, 1
-    assert_equal ls.args.to_s, "-s"
+    ls = Ls.options { g }
+    assert_equal 1, ls.args.size
+    assert_equal "-g", ls.args.to_s
   end
   
   def test_not_defined_long_argument
     ls = Ls.options { color }
-    assert_equal ls.args.size, 1
-    assert_equal ls.args.to_s, "--color"
+    assert_equal 1, ls.args.size
+    assert_equal "--color", ls.args.to_s
   end
 
   def test_not_defined_long_argument_with_underscore
     ls = Ls.options { color_test }
-    assert_equal ls.args.size, 1
-    assert_equal ls.args.to_s, "--color-test"
+    assert_equal 1, ls.args.size
+    assert_equal "--color-test", ls.args.to_s
   end
 
   def test_no_double_dash_option
     ffmpeg = FFMpeg.options { vcodec "libx264" }
-    assert_equal ffmpeg.command, "ffmpeg -vcodec 'libx264'"
+    assert_equal "ffmpeg -vcodec 'libx264'", ffmpeg.command
   end
 
   def test_remove_args_if_not_defined
     ffmpeg = FFMpeg.options { vcodec "libx264" }
-    assert_equal ffmpeg.args.size, 1
+    assert_equal 1, ffmpeg.args.size
     ffmpeg.remove :vcodec
-    assert_equal ffmpeg.args.size, 0
+    assert_equal 0, ffmpeg.args.size
   end
 
   def test_command
-    assert_equal Ls.options { full; s }.command, "ls -a -h -s"
+    assert_equal "ls -a -h -g", Ls.options { full; g }.command
   end
 
   def test_add_options
     ls = Ls.options { a }
-    assert_equal ls.args.flatten.size, 1
+    assert_equal 1, ls.args.flatten.size
     ls.options { l; h }
-    assert_equal ls.args.flatten.size, 3
+    assert_equal 3, ls.args.flatten.size
 
-    assert_equal ls.command, "ls -a -l -h"
+    assert_equal "ls -a -l -h", ls.command
   end
 
   def test_add_option
     ls = Ls.new
     ls.all
-    assert_equal ls.args.flatten.size, 1
-    assert_equal ls.command, "ls -a"
+    assert_equal 1, ls.args.flatten.size
+    assert_equal "ls -a", ls.command
 
     ls.l
-    assert_equal ls.args.flatten.size, 2
-    assert_equal ls.command, "ls -a -l"
+    assert_equal 2, ls.args.flatten.size
+    assert_equal "ls -a -l", ls.command
   end
 
   def test_add_option_with_args
@@ -121,25 +116,25 @@ class SimpleCliTest < Test::Unit::TestCase
       @args << ["-c", 2] << ["google.com"]
     }
 
-    assert_equal ping.command, "#{Ping._bin} -c 2 google.com"
+    assert_equal ping.command, "#{Ping.bin} -c 2 google.com"
   end
 
   def test_remove_options
     ls = Ls.options { a; l; h }
     ls.remove :a, :h
-    assert_equal ls.command, "ls -l"
+    assert_equal "ls -l", ls.command
 
     ls.reset
     ls.all
     ls.remove :all
-    assert_equal ls.command, "ls"
+    assert_equal "ls", ls.command
   end
 
   def test_reset
     ls = Ls.options { a; l; h }
-    assert_equal ls.command, "ls -a -l -h"
+    assert_equal "ls -a -l -h", ls.command
     ls.reset
-    assert_equal ls.command, "ls"
+    assert_equal "ls", ls.command
   end
 
   def test_exec
@@ -157,7 +152,7 @@ class SimpleCliTest < Test::Unit::TestCase
     end
 
     assert_instance_of Process::Status, process
-    assert_equal process.exitstatus, 0
+    assert_equal 0, process.exitstatus
   end
 
   def test_timeout
@@ -167,7 +162,7 @@ class SimpleCliTest < Test::Unit::TestCase
         _timeout 2
       }.exec
     end
-    assert_equal Ping.timeout, 2
+    assert_equal 2, Ping.timeout
   end
 
   def test_stdout
@@ -196,7 +191,7 @@ class SimpleCliTest < Test::Unit::TestCase
       all
     }.on_success {|status, out| 
       assert_instance_of Process::Status, status
-      assert_equal status.exitstatus, 0
+      assert_equal 0, status.exitstatus
       assert_instance_of String, out
     }.exec {|out| 
       assert_instance_of String, out
@@ -208,7 +203,7 @@ class SimpleCliTest < Test::Unit::TestCase
       @args = ["/not/a/path"]
     }.on_error {|status, out|
       assert_instance_of Process::Status, status
-      assert_equal status.exitstatus, 1
+      assert_equal 1, status.exitstatus
       assert_instance_of String, out
     }.exec {|out| 
       assert_instance_of String, out

@@ -59,42 +59,6 @@ curl.proxy "proxyip:port"                       # => "curl --url 'http://google.
 curl.remove :proxy                              # => "curl --url 'http://google.com' -A 'Coulis / 0.1.2'"
 ```
 
-## Profile ##
-
-Let's say you want to set the user agent, user credentials and the header accept/json for each request. Let's define it in our class Curl:
-
-``` ruby
-class Curl < Coulis
-  adef :user,    "-u"
-  adef :request, "-X"
-  adef :data,    "-d"
-  adef :header,  "-H"
-  adef :agent,   "-A"
-  adef :form,    "-F"
-  adef :proxy,   "-x"
-  adef :head,    "-I"
-
-  adef :accept_json do
-    header "Accept: application/json"
-  end
-
-  adef :default do
-    user "user:passwd"
-    accept_json
-    agent "Coulis / 0.1.0"
-  end
-end
-```
-
-Now to use our profile `default`:
-
-``` ruby
-Curl.options {
-  default
-  url "http://heywatch.com/account"
-}.exec {...}
-```
-
 ## Parsing Output ##
 
 Define the method `parse_output` in your class to automatically parse the output, here is an example with `nslookup`:
@@ -195,8 +159,8 @@ Curl.options {
 }.exec
 ```
 ```
-"Error downloading the page
-After error"
+Error downloading the page
+After error
 ```
 
 Released under the [MIT license](http://www.opensource.org/licenses/mit-license.php).

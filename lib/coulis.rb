@@ -2,7 +2,7 @@ require "timeout"
 
 class Coulis
   class << self
-    attr_accessor :args, :_definitions, :_bin, :timeout, :no_double_dash
+    attr_accessor :_definitions, :bin, :timeout, :no_double_dash
 
     def exec(*args, &block)
       self.new.exec *args, &block
@@ -12,8 +12,8 @@ class Coulis
       self.new(&block)
     end
 
-    def bin(p)
-      @_bin = p.to_s
+    def _bin(p)
+      @bin = p.to_s
     end
 
     def _timeout(t)
@@ -25,44 +25,21 @@ class Coulis
     end
 
     def adef(name, option=nil, &block)
-      (@_definitions||={})[name.to_sym] = (option || Proc.new { self.instance_eval(&block).flatten })
-    end
-
-    def method_missing(m, args=nil)
-      m = m.to_s.gsub("=", "")
-      @args ||= []
-      definition = @_definitions[m.to_sym] rescue nil
-
-      #puts "m: #{m}, def: #{definition.inspect} | args:#{args}"
-      if definition.is_a?(Proc)
-        definition.call
-      else
-        arg_name = "#{"-" if m[0..0] != "-"}#{m}"
-        arg_name = "-" + arg_name.gsub("_", "-") if !@no_double_dash && arg_name.size > 2
-
-        if args.to_s.empty?
-          @args << [ definition || arg_name ]
-        else
-          q = ""
-          q = "'" if args.to_s[0..0] != "'"
-          @args << [ definition || arg_name , "#{q}#{args}#{q}" ]
-        end
-      end
+      (@_definitions||={})[name.to_sym] = (option || block )
     end
   end
 
   attr_accessor :args
 
   def initialize(&block)
-    self.class.instance_eval(&block) if block_given?
-    @args = self.class.args
-    self.class.args = []
+    @args ||= []
+    self.instance_eval(&block) if block_given?
     self
   end
 
   def options(&block)
-    self.class.args = @args
-    self.class.new(&block)
+    self.instance_eval(&block)
+    self
   end
 
   def remove(*args)
@@ -73,13 +50,11 @@ class Coulis
         @args.delete(b)
       end
     end
-    self.class.args = @args
     self
   end
 
   def reset
     @args = []
-    self.class.args = []
   end
 
   def build_args
@@ -87,8 +62,15 @@ class Coulis
     @args.flatten.join(" ")
   end
 
+  def value_by_arg(argname)
+    definition = self.class._definitions[argname.to_sym] || argname
+
+    value = @args.find{|a| a[0].to_s == definition.to_s}
+    return value.nil? ? nil : value[1]
+  end
+
   def command
-    "#{self.class._bin || self.class.to_s.downcase} #{build_args}".strip
+    "#{self.class.bin || self.class.to_s.downcase} #{build_args}".strip
   end
 
   def fire_command(&block)
@@ -129,10 +111,33 @@ class Coulis
   def after_success(proc, res); end
   def after_error(proc, res); end
 
+  def _timeout(value)
+    self.class.timeout = value
+  end
+
+  def _bin(path)
+    self.class.bin = path
+  end
+
   def method_missing(m, args=nil)
-    self.class.args = @args
-    self.class.method_missing(m, args)
-    @args = self.class.args
+    m = m.to_s.gsub("=", "")
+    @args ||= []
+    definition = self.class._definitions[m.to_sym] rescue nil
+    #puts "m: #{m}, args: #{args.inspect}, definition: #{definition.inspect}"
+    if definition.is_a?(Proc)
+      self.class.exec_proc(&definition)
+    else
+      arg_name = "#{"-" if m[0..0] != "-"}#{m}"
+      arg_name = "-" + arg_name.gsub("_", "-") if !self.class.no_double_dash && arg_name.size > 2
+
+      if args.to_s.empty?
+        @args << [ definition || arg_name ]
+      else
+        q = ""
+        q = "'" if args.to_s[0..0] != "'"
+        @args << [ definition || arg_name , "#{q}#{args}#{q}" ]
+      end
+    end
     self
   end
 
