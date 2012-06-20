@@ -77,6 +77,8 @@ class Coulis
     return if result.nil? 
 
     value = result[1]
+    return nil if value.nil?
+    
     if value[0..0] == "'" && value[-1..-1]
       return value[1..-2]
     else
