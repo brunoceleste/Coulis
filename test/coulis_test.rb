@@ -9,6 +9,7 @@ end
 
 class FFMpeg < Coulis
   _no_double_dash
+  adef :input, "-i"
 end
 
 class Ping < Coulis
@@ -208,5 +209,11 @@ class SimpleCliTest < Test::Unit::TestCase
     }.exec {|out| 
       assert_instance_of String, out
     }
+  end
+
+  def test_getting_value_by_arg
+    ffmpeg = FFMpeg.options { input "video.mp4"; vcodec "libx264"}
+    assert_equal "video.mp4", ffmpeg.value_by_arg(:input)
+    assert_equal "libx264", ffmpeg.value_by_arg(:vcodec)
   end
 end

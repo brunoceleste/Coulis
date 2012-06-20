@@ -62,11 +62,26 @@ class Coulis
     @args.flatten.join(" ")
   end
 
-  def value_by_arg(argname)
-    definition = self.class._definitions[argname.to_sym] || argname
+  def argumentize(argname)
+    argname = "#{"-" if argname.to_s[0..0] != "-"}#{argname}"
+    if !self.class.no_double_dash && argname.size > 2
+      argname = "-" + argname.gsub("_", "-")
+    end
+    argname
+  end
 
-    value = @args.find{|a| a[0].to_s == definition.to_s}
-    return value.nil? ? nil : value[1]
+  def value_by_arg(argname)
+    definition = self.class._definitions[argname.to_sym] || argumentize(argname)
+
+    result = @args.find{|a| a[0].to_s == definition.to_s}
+    return if result.nil? 
+
+    value = result[1]
+    if value[0..0] == "'" && value[-1..-1]
+      return value[1..-2]
+    else
+      return value
+    end
   end
 
   def command
@@ -127,8 +142,7 @@ class Coulis
     if definition.is_a?(Proc)
       self.class.exec_proc(&definition)
     else
-      arg_name = "#{"-" if m[0..0] != "-"}#{m}"
-      arg_name = "-" + arg_name.gsub("_", "-") if !self.class.no_double_dash && arg_name.size > 2
+      arg_name = argumentize(m)
 
       if args.to_s.empty?
         @args << [ definition || arg_name ]
