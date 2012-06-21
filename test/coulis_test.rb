@@ -190,9 +190,9 @@ class SimpleCliTest < Test::Unit::TestCase
   def test_success_event
     process = Ls.options {
       all
-    }.on_success {|status, out| 
-      assert_instance_of Process::Status, status
-      assert_equal 0, status.exitstatus
+    }.on_success {|out| 
+      assert_instance_of Process::Status, $?
+      assert_equal 0, $?.exitstatus
       assert_instance_of String, out
     }.exec {|out| 
       assert_instance_of String, out
@@ -202,9 +202,9 @@ class SimpleCliTest < Test::Unit::TestCase
   def test_error_event
     process = Ls.options {
       @args = ["/not/a/path"]
-    }.on_error {|status, out|
-      assert_instance_of Process::Status, status
-      assert_equal 1, status.exitstatus
+    }.on_error {|out|
+      assert_instance_of Process::Status, $?
+      assert_equal 1, $?.exitstatus
       assert_instance_of String, out
     }.exec {|out| 
       assert_instance_of String, out

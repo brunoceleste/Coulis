@@ -78,7 +78,7 @@ class Coulis
 
     value = result[1]
     return nil if value.nil?
-    
+
     if value[0..0] == "'" && value[-1..-1]
       return value[1..-2]
     else
@@ -102,10 +102,10 @@ class Coulis
       end
     end
     if $?.exitstatus != 0
-      @on_error_block.call($?, res) if @on_error_block.is_a?(Proc)
+      @on_error_block.call(res) if @on_error_block.is_a?(Proc)
       after_error($?, res)
     else
-      @on_success_block.call($?, res) if @on_success_block.is_a?(Proc)
+      @on_success_block.call(res) if @on_success_block.is_a?(Proc)
       after_success($?, res)
     end
     return (block_given? ? $? : parse_output(res))

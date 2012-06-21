@@ -152,9 +152,9 @@ end
 
 Curl.options {
   url "http://baddomainnamezzz.com"
-}.on_success {|status, out|
+}.on_success {|out|
   puts "Page downloaded"
-}.on_error {|status, out|
+}.on_error {|out|
   puts "Error downloading the page"
 }.exec
 ```
