@@ -46,7 +46,7 @@ class Coulis
     new_args = []
     defs = self.class._definitions || {}
     args.each do |a|
-      @args.select {|b| b[0] == (defs[a] || "-#{a}")}.each do |b|
+      @args.select {|b| b[0] == (defs[a] || argumentize(a))}.each do |b|
         @args.delete(b)
       end
     end
@@ -157,6 +157,7 @@ class Coulis
         # delete doublon
         if args[1] && args[1].has_key?(:uniq)
           # FIXME: use remove method
+          #remove definition || arg_name
           if found = @args.find{|a| a[0] == definition || arg_name}
             @args.delete found
           end
@@ -175,7 +176,7 @@ class Coulis
     if arg_to_find = opts[:before] || opts[:after]
       found = @args.find{|a| a[0] == self.class._definitions[arg_to_find.to_sym] || arg_to_find}
       if found && index = @args.index(found)
-        puts "index: #{index} => #{found}"
+        #puts "index: #{index} => #{found}"
         @args.insert(index+1, full_arg)
       end
     else
