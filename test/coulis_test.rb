@@ -216,4 +216,31 @@ class SimpleCliTest < Test::Unit::TestCase
     assert_equal "video.mp4", ffmpeg.value_by_arg(:input)
     assert_equal "libx264", ffmpeg.value_by_arg(:vcodec)
   end
+
+  def test_adding_arg_before_another
+    ffmpeg = FFMpeg.options {
+      input "video.mp4"
+      y "out.avi"
+      vcodec "libx264", :before => "-y"
+    }
+    assert_equal "ffmpeg -i 'video.mp4' -vcodec 'libx264' -y 'out.avi'", ffmpeg.command
+  end
+
+  def test_adding_arg_after_another
+    ffmpeg = FFMpeg.options {
+      input "video.mp4"
+      y "out.avi"
+    }
+    ffmpeg.vcodec "libx264", :after => :input
+    assert_equal "ffmpeg -i 'video.mp4' -vcodec 'libx264' -y 'out.avi'", ffmpeg.command
+  end
+
+  def test_adding_uniq_arg
+    ffmpeg = FFMpeg.options {
+      input "video.mp4"
+      y "out.avi"
+    }
+    ffmpeg.input "video2.mp4", :before => "-y", :uniq => true
+    assert_equal "ffmpeg -i 'video2.mp4' -y 'out.avi'", ffmpeg.command
+  end
 end

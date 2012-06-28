@@ -136,13 +136,13 @@ class Coulis
     self.class.bin = path
   end
 
-  def method_missing(m, args=nil)
+  def method_missing(m, *args)
     m = m.to_s.gsub("=", "")
     @args ||= []
     definition = self.class._definitions[m.to_sym] rescue nil
     #puts "m: #{m}, args: #{args.inspect}, definition: #{definition.inspect}"
     if definition.is_a?(Proc)
-      self.class.exec_proc(&definition)
+      #self.class.exec_proc(&definition)
     else
       arg_name = argumentize(m)
 
@@ -150,11 +150,37 @@ class Coulis
         @args << [ definition || arg_name ]
       else
         q = ""
-        q = "'" if args.to_s[0..0] != "'"
-        @args << [ definition || arg_name , "#{q}#{args}#{q}" ]
+        q = "'" if args[0].to_s[0..0] != "'"
+        full_arg = [ definition || arg_name , "#{q}#{args[0]}#{q}" ]
+
+        insert_args(full_arg, args[1])
+        # delete doublon
+        if args[1] && args[1].has_key?(:uniq)
+          # FIXME: use remove method
+          if found = @args.find{|a| a[0] == definition || arg_name}
+            @args.delete found
+          end
+        end
       end
     end
     self
+  end
+
+  def insert_args(full_arg, opts=nil)
+    if !opts
+      @args << full_arg
+      return
+    end
+
+    if arg_to_find = opts[:before] || opts[:after]
+      found = @args.find{|a| a[0] == self.class._definitions[arg_to_find.to_sym] || arg_to_find}
+      if found && index = @args.index(found)
+        puts "index: #{index} => #{found}"
+        @args.insert(index+1, full_arg)
+      end
+    else
+      @args << full_arg
+    end
   end
 
   def inspect
