@@ -153,23 +153,26 @@ class Coulis
         q = "'" if args[0].to_s[0..0] != "'"
         full_arg = [ definition || arg_name , "#{q}#{args[0]}#{q}" ]
 
-        insert_args(full_arg, args[1])
+        insert_arg(full_arg, args[1])
         # delete doublon
         if args[1] && args[1].has_key?(:uniq)
-          # FIXME: use remove method
-          #remove definition || arg_name
-          if found = @args.find{|a| a[0] == definition || arg_name}
-            @args.delete found
-          end
+          uniq_arg(definition || arg_name)
         end
       end
     end
     self
   end
 
-  def insert_args(full_arg, opts=nil)
+  def uniq_arg(arg)
+    if found = @args.find{|a| a[0] == arg}
+      @args.delete found
+    end
+    self
+  end
+
+  def insert_arg(arg, opts=nil)
     if !opts
-      @args << full_arg
+      @args << arg
       return
     end
 
@@ -177,10 +180,10 @@ class Coulis
       found = @args.find{|a| a[0] == self.class._definitions[arg_to_find.to_sym] || arg_to_find}
       if found && index = @args.index(found)
         #puts "index: #{index} => #{found}"
-        @args.insert(index+1, full_arg)
+        @args.insert(index+1, arg)
       end
     else
-      @args << full_arg
+      @args << arg
     end
   end
 
