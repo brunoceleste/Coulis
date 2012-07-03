@@ -141,24 +141,21 @@ class Coulis
     @args ||= []
     definition = self.class._definitions[m.to_sym] rescue nil
     #puts "m: #{m}, args: #{args.inspect}, definition: #{definition.inspect}"
-    if definition.is_a?(Proc)
-      #self.class.exec_proc(&definition)
-    else
-      arg_name = argumentize(m)
+    arg_name = argumentize(m)
 
-      if args.to_s.empty?
-        @args << [ definition || arg_name ]
-      else
-        q = ""
-        q = "'" if args[0].to_s[0..0] != "'"
-        full_arg = [ definition || arg_name , "#{q}#{args[0]}#{q}" ]
+    if args.to_s.empty?
+      insert_arg [ definition || arg_name ]
+      return self
+    end
 
-        insert_arg(full_arg, args[1])
-        # delete doublon
-        if args[1] && args[1].has_key?(:uniq)
-          uniq_arg(definition || arg_name)
-        end
-      end
+    q = ""
+    q = "'" if args[0].to_s[0..0] != "'"
+    full_arg = [ definition || arg_name , "#{q}#{args[0]}#{q}" ]
+
+    insert_arg(full_arg, args[1])
+    # delete doublon
+    if args[1] && args[1].has_key?(:uniq)
+      uniq_arg(definition || arg_name)
     end
     self
   end
@@ -173,18 +170,20 @@ class Coulis
   def insert_arg(arg, opts=nil)
     if !opts
       @args << arg
-      return
+      return self
     end
 
     if arg_to_find = opts[:before] || opts[:after]
-      found = @args.find{|a| a[0] == self.class._definitions[arg_to_find.to_sym] || arg_to_find}
+      found = @args.find{|a| 
+        a[0] == self.class._definitions[arg_to_find.to_sym] || arg_to_find
+      }
       if found && index = @args.index(found)
-        #puts "index: #{index} => #{found}"
         @args.insert(index+1, arg)
       end
     else
       @args << arg
     end
+    self
   end
 
   def inspect
