@@ -203,6 +203,8 @@ class Coulis
   end
 
   def safe_arg?(argname)
+    # help parsing issue, so safe mode is off
+    return true if(self.class._safe_args || []).empty?
     !self.class._safe_args.find{|a| a.to_s == argname.to_s}.nil?
   end
 

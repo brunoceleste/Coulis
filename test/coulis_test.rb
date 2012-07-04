@@ -321,4 +321,16 @@ class SimpleCliTest < Test::Unit::TestCase
 
     assert_equal "curl --request 'POST' --data 'test=ok' --url 'http://mysite.com/test'", curl.command
   end
+
+  def test_safe_mode_is_off_if_help_parsing_issue
+    FFMpeg._safe_args = nil
+    FFMpeg._help = "ffmpeg help broken"
+    FFMpeg._safe_mode
+
+    ffmpeg = FFMpeg.options {
+      input "video.mp4"
+      nonexistingarg "nio"
+    }
+    assert_equal "ffmpeg -i 'video.mp4' -nonexistingarg 'nio'", ffmpeg.command
+  end
 end
