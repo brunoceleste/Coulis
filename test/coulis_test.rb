@@ -2,6 +2,8 @@ require "test/unit"
 require "coulis"
 
 class Ls < Coulis
+  _safe_args { help.to_s.match(/ls \[-([\w]+)\]/)[1].chars.to_a }
+
   adef :all, "-a"
   adef :human, "-h"
   adef :full, "-a -h"
@@ -13,6 +15,7 @@ class FFMpeg < Coulis
 end
 
 class Ping < Coulis
+  _safe_args { ["-c"] }
   _bin `whereis ping`.strip
   adef :count, "-c"
 end
@@ -23,6 +26,10 @@ class NSLookup < Coulis
       map{|x| x.match(/Address: ([0-9\.]+)/)[1] rescue nil}.
       compact
   end
+end
+
+class Curl < Coulis
+  _safe_mode
 end
 
 class SimpleCliTest < Test::Unit::TestCase
@@ -253,5 +260,65 @@ class SimpleCliTest < Test::Unit::TestCase
       all :before => :human
     }
     assert_equal "ls -a -h", ls.command
+  end
+
+  def test_list_safe_args
+    args = Ls._safe_args
+    assert_instance_of Array, args
+    assert args.size > 0
+    #p args
+
+    args = FFMpeg._safe_args
+    assert_instance_of Array, args
+    assert args.size > 0
+    #p args
+
+    args = Ping._safe_args
+    assert_instance_of Array, args
+    assert args.size > 0
+    #p args
+
+    args = Curl._safe_args
+    assert_instance_of Array, args
+    assert args.size > 0
+    #p args
+  end
+
+  def test_safe_mode_is_true_per_arg
+    ffmpeg = FFMpeg.options {
+      input "video.mp4"
+      nonexistingarg "nio", :safe => true
+    }
+    ffmpeg.fake_arg :safe => true
+    ffmpeg.fake_but_ok
+
+    args = [["nope1", "1"], ["nope2", "2"], ["-y", "output.avi"]]
+    args.each{|k,v| ffmpeg.send(k,v, :safe => true)}
+    assert_equal "ffmpeg -i 'video.mp4' -fake_but_ok -y 'output.avi'", ffmpeg.command
+
+    ping = Ping.options {
+      count 2, :safe => true
+      nope "no", :safe => true
+      nope2 "no2"
+    }
+    assert_equal "/sbin/ping -c '2' --nope2 'no2'", ping.command
+  end
+
+  def test_safe_mode_is_true_per_class
+    FFMpeg._safe_mode
+    ffmpeg = FFMpeg.options {
+      input "video.mp4"
+      nonexistingarg "nio"
+    }
+    assert_equal "ffmpeg -i 'video.mp4'", ffmpeg.command
+
+    curl = Curl.options {
+      request "POST"
+      data "test=ok"
+      url "http://mysite.com/test"
+      fake_arg "ok"
+    }
+
+    assert_equal "curl --request 'POST' --data 'test=ok' --url 'http://mysite.com/test'", curl.command
   end
 end

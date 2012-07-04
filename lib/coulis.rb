@@ -2,7 +2,8 @@ require "timeout"
 
 class Coulis
   class << self
-    attr_accessor :_definitions, :bin, :timeout, :no_double_dash
+    attr_accessor :_definitions, :_safe_args, :_help
+    attr_accessor :bin, :timeout, :no_double_dash, :safe_mode
 
     def exec(*args, &block)
       self.new.exec *args, &block
@@ -16,6 +17,10 @@ class Coulis
       @bin = p.to_s
     end
 
+    def _safe_mode(bool=true)
+      @safe_mode = bool
+    end
+
     def _timeout(t)
       @timeout = t
     end
@@ -26,6 +31,30 @@ class Coulis
 
     def adef(name, option=nil, &block)
       (@_definitions||={})[name.to_sym] = (option || block )
+    end
+
+    def help(help_arg="--help")
+      return @_help if @_help && !@_help.empty?
+
+      @_help = options { @args = [help_arg] }.
+        exec.split("\n").map(&:strip)
+    end
+
+    def _safe_args(&block)
+      return @_safe_args if @_safe_args
+      @_safe_args ||= []
+      if block_given?
+        @_safe_args = instance_eval(&block)
+      else
+        help.each do |l|
+          args = l.scan(/(\-{1,2}[\w\-]+)[\W]/)
+          unless args.empty?
+            args.each{|a| @_safe_args << a.to_s}
+          end
+        end
+      end
+
+      return @_safe_args.uniq!
     end
   end
 
@@ -173,7 +202,15 @@ class Coulis
     self
   end
 
+  def safe_arg?(argname)
+    !self.class._safe_args.find{|a| a.to_s == argname.to_s}.nil?
+  end
+
   def insert_arg(arg, opts=nil)
+    if self.class.safe_mode || (opts && opts[:safe] == true)
+      return unless safe_arg?(arg[0])
+    end
+
     if !opts
       @args << arg
       return self
