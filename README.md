@@ -163,6 +163,63 @@ Error downloading the page
 After error
 ```
 
+## Safe mode ##
+
+Safe mode is a feature that is used to prevent non existing argument to be added to the command line. You have two ways to use it: in the definition of your class via the method `_safe_mode`, and in the argument option `:safe => true`.
+
+By default we parse the help output of the program so basically, every arguments that start with "-" are valid. If you're not statisfied by the default parsing and you're surely right, you can use the method `_safe_args`.
+
+So here we define `_safe_mode` in the class itself so all the arguments added are valid.
+
+``` ruby
+class CurlSafe < Coulis
+  _bin "curl"
+  _safe_mode
+end
+
+curl = CurlSafe.options {
+  url "http://google.com"
+  fake_arg "nop"
+}
+
+puts curl.command # => curl --url 'http://google.com'
+```
+
+Here, only `fake_arg` is checked.
+
+``` ruby
+curl = Curl.options {
+  url "http://google.com"
+  fake_arg "nop", :safe => true
+  fake_arg_ok "yes"
+}
+
+puts curl.command # => curl --url 'http://google.com' --fake-arg-ok 'yes'
+```
+
+Now let's define the safe args ourself:
+
+``` ruby
+class CurlSafe < Coulis
+  _bin "curl"
+  _safe_mode
+  
+  # we only want to make GET request with basic auth
+  # nothing more will be permitted
+  _safe_args {
+    %w(--url --user)
+  }
+end
+
+curl = CurlSafe.options {
+  url "http://google.com"
+  fake_arg "nop"
+  fake_arg_ok "yes"
+}
+
+puts curl.command # => curl --url 'http://google.com'
+```
+
 Released under the [MIT license](http://www.opensource.org/licenses/mit-license.php).
 
 Author: Bruno Celeste [@sadikzzz](http://twitter.com/sadikzzz)
