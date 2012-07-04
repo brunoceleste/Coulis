@@ -148,13 +148,19 @@ class Coulis
       return self
     end
 
-    q = ""
-    q = "'" if args[0].to_s[0..0] != "'"
-    full_arg = [ definition || arg_name , "#{q}#{args[0]}#{q}" ]
+    if args[0].is_a?(Hash) # no value but options
+      full_arg = [ definition || arg_name ]
+      opts = args[0]
+    else
+      q = ""
+      q = "'" if args[0].to_s[0..0] != "'"
+      full_arg = [ definition || arg_name , "#{q}#{args[0]}#{q}" ]
+      opts = args[1]
+    end
 
-    insert_arg(full_arg, args[1])
+    insert_arg(full_arg, opts)
     # delete doublon
-    if args[1] && args[1].has_key?(:uniq)
+    if opts && opts.has_key?(:uniq)
       uniq_arg(definition || arg_name)
     end
     self
@@ -175,10 +181,12 @@ class Coulis
 
     if arg_to_find = opts[:before] || opts[:after]
       found = @args.find{|a| 
-        a[0] == self.class._definitions[arg_to_find.to_sym] || arg_to_find
+        a[0] == (self.class._definitions[arg_to_find.to_sym] || arg_to_find)
       }
+
       if found && index = @args.index(found)
-        @args.insert(index+1, arg)
+        index+=1 if opts[:after]
+        @args.insert(index, arg)
       end
     else
       @args << arg

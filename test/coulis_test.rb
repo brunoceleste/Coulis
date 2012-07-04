@@ -33,6 +33,9 @@ class SimpleCliTest < Test::Unit::TestCase
 
   def test_shit
     #p Ls.options { full }
+    ls = Ls.options {
+      all :uniq => true
+    }
   end
 
   def test_default_bin
@@ -242,5 +245,13 @@ class SimpleCliTest < Test::Unit::TestCase
     }
     ffmpeg.input "video2.mp4", :before => "-y", :uniq => true
     assert_equal "ffmpeg -i 'video2.mp4' -y 'out.avi'", ffmpeg.command
+  end
+
+  def test_arg_with_no_value_but_options
+    ls = Ls.options {
+      human
+      all :before => :human
+    }
+    assert_equal "ls -a -h", ls.command
   end
 end
