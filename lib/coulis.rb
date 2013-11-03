@@ -49,7 +49,7 @@ class Coulis
         help.each do |l|
           args = l.scan(/(\-{1,2}[\w\-]+)[\W]/)
           unless args.empty?
-            args.each{|a| @_safe_args << a.to_s}
+            args.each{|a| @_safe_args << a[0].to_s}
           end
         end
       end
@@ -103,7 +103,7 @@ class Coulis
     definition = self.class._definitions[argname.to_sym] || argumentize(argname)
 
     result = @args.find{|a| a[0].to_s == definition.to_s}
-    return if result.nil? 
+    return if result.nil?
 
     value = result[1]
     return nil if value.nil?
@@ -172,7 +172,7 @@ class Coulis
     #puts "m: #{m}, args: #{args.inspect}, definition: #{definition.inspect}"
     arg_name = argumentize(m)
 
-    if args.to_s.empty?
+    if args.size == 0
       insert_arg [ definition || arg_name ]
       return self
     end
@@ -219,7 +219,7 @@ class Coulis
     end
 
     if arg_to_find = opts[:before] || opts[:after]
-      found = @args.find{|a| 
+      found = @args.find{|a|
         a[0] == (self.class._definitions[arg_to_find.to_sym] || arg_to_find)
       }
 

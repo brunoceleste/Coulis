@@ -1,3 +1,4 @@
+$LOAD_PATH << "."
 require "test/unit"
 require "coulis"
 
@@ -65,25 +66,25 @@ class SimpleCliTest < Test::Unit::TestCase
 
   def test_argument_added
     ls = Ls.options { all }
-    assert true, ls.args[0] == "-a"
+    assert ls.args[0][0] == "-a"
   end
 
   def test_not_defined_short_argument
     ls = Ls.options { g }
     assert_equal 1, ls.args.size
-    assert_equal "-g", ls.args.to_s
+    assert_equal "-g", ls.args[0][0]
   end
-  
+
   def test_not_defined_long_argument
     ls = Ls.options { color }
     assert_equal 1, ls.args.size
-    assert_equal "--color", ls.args.to_s
+    assert_equal "--color", ls.args[0][0]
   end
 
   def test_not_defined_long_argument_with_underscore
     ls = Ls.options { color_test }
     assert_equal 1, ls.args.size
-    assert_equal "--color-test", ls.args.to_s
+    assert_equal "--color-test", ls.args[0][0]
   end
 
   def test_no_double_dash_option
@@ -152,14 +153,14 @@ class SimpleCliTest < Test::Unit::TestCase
     ls = Ls.options { full }.exec
 
     assert_instance_of String, ls
-    assert true, ls.size > 0
+    assert ls.size > 0
   end
 
   def test_exec_with_block
     ls = Ls.options { full }
     process = ls.exec do |out|
       assert_instance_of String, out
-      assert true, out.size > 0
+      assert out.size > 0
     end
 
     assert_instance_of Process::Status, process
@@ -185,7 +186,7 @@ class SimpleCliTest < Test::Unit::TestCase
       res << out
     end
 
-    assert true, res.size > 0
+    assert res.size > 0
   end
 
   def test_parse_output
@@ -193,18 +194,18 @@ class SimpleCliTest < Test::Unit::TestCase
       @args = ["google.com"]
     }.exec do |ips|
       assert_instance_of Array, ips
-      assert true, ips.size > 1
+      assert ips.size > 1
     end
   end
 
   def test_success_event
     process = Ls.options {
       all
-    }.on_success {|out| 
+    }.on_success {|out|
       assert_instance_of Process::Status, $?
       assert_equal 0, $?.exitstatus
       assert_instance_of String, out
-    }.exec {|out| 
+    }.exec {|out|
       assert_instance_of String, out
     }
   end
@@ -216,7 +217,7 @@ class SimpleCliTest < Test::Unit::TestCase
       assert_instance_of Process::Status, $?
       assert_equal 1, $?.exitstatus
       assert_instance_of String, out
-    }.exec {|out| 
+    }.exec {|out|
       assert_instance_of String, out
     }
   end
@@ -324,7 +325,7 @@ class SimpleCliTest < Test::Unit::TestCase
 
   def test_safe_mode_is_off_if_help_parsing_issue
     FFMpeg._safe_args = nil
-    FFMpeg._help = "ffmpeg help broken"
+    FFMpeg._help = ["ffmpeg help broken"]
     FFMpeg._safe_mode
 
     ffmpeg = FFMpeg.options {
